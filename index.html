@@ -3,72 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khmer Text to Speech</title>
+    <title>Text to Speech - បម្លើសអត្ថបទ</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            margin: 0;
             padding: 20px;
         }
         .container {
+            max-width: 700px;
+            margin: 0 auto;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            max-width: 600px;
-            width: 100%;
             text-align: center;
         }
         h1 {
             color: #667eea;
             margin-bottom: 10px;
+            font-size: 24px;
         }
-        p {
+        .subtitle {
             color: #666;
             margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .lang-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .lang-btn:hover:not(.active) {
+            border-color: #667eea;
         }
         textarea {
             width: 100%;
-            height: 150px;
-            padding: 15px;
+            height: 200px;
+            padding: 20px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            border-radius: 15px;
             font-size: 16px;
             resize: vertical;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
+            transition: all 0.3s;
+            font-family: inherit;
         }
         textarea:focus {
             outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .placeholder-text {
+            color: #999;
         }
         .buttons {
             display: flex;
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 25px;
             flex-wrap: wrap;
             justify-content: center;
         }
         button {
-            padding: 12px 25px;
+            padding: 14px 28px;
             border: none;
-            border-radius: 25px;
+            border-radius: 30px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
         }
         button:active {
             transform: translateY(0);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
         #speakBtn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -78,12 +116,16 @@
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
         }
-        #status {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 10px;
+        .status {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 12px;
             font-size: 14px;
-            min-height: 40px;
+            min-height: 50px;
+            display: none;
+        }
+        .status.show {
+            display: block;
         }
         .success {
             background: #d4edda;
@@ -97,18 +139,41 @@
             background: #d1ecf1;
             color: #0c5460;
         }
+        .info-text {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+        .info-text strong {
+            color: #667eea;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🗣️ បម្លើសអត្ថបទ</h1>
-        <p>បញ្ចូលអត្ថបទខ្មែរដើម្បីបម្លើសទៅជាសំឡេង</p>
-        <textarea id="textInput" placeholder="សូមវាយអត្ថបទនៅទីនេះ..."></textarea>
+        <p class="subtitle">Text to Speech | បម្លើសអត្ថបទទៅជាសំឡេង</p>
+        
+        <div class="language-selector">
+            <button class="lang-btn active" data-lang="km">🇨🇳 ខ្មែរ</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 English</button>
+        </div>
+
+        <textarea id="textInput" class="placeholder-text">សូមវាយអត្ថបទនៅទីនេះ...</textarea>
+        
         <div class="buttons">
-            <button id="speakBtn">🔊 ស្តាប់សំឡេង</button>
+            <button id="speakBtn">🔊 ស្តាប់</button>
             <button id="downloadBtn">📥 ទាញយក MP3</button>
         </div>
-        <div id="status"></div>
+
+        <div id="status" class="status"></div>
+
+        <div class="info-text">
+            <strong>ប្រើប្រាស៖</strong> Select language បញ្ចូលអត្ថបទ ចុចស្តាប់សំឡេង ឬទាញយក MP3
+            <br><br>
+            <strong>Support:</strong> Khmer & English | Works on Chrome, Edge, Safari
+        </div>
     </div>
 
     <script>
@@ -116,23 +181,66 @@
         const speakBtn = document.getElementById('speakBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const statusDiv = document.getElementById('status');
+        const langButtons = document.querySelectorAll('.lang-btn');
 
-        let audioContext = null;
+        let currentLang = 'km';
         let mediaStream = null;
         let mediaRecorder = null;
         let audioChunks = [];
 
+        const placeholders = {
+            km: 'សូមវាយអត្ថបទនៅទីនេះ...',
+            en: 'Type your text here...'
+        };
+
+        const messages = {
+            km: {
+                empty: 'សូមបញ្ចូលអត្ថបទជាមុនសិន។',
+                processing: 'កំពុងដំណើរការ...',
+                reading: 'កំពុងអានអត្ថបទ...',
+                done: 'បានបញ្ចប់ការអាន។',
+                error: 'មានបញ្ហាក្នុងការអាន៖ ',
+                browser: 'Browser របស់អ្នកមិនគាំទ្រការបម្លើសទេ។',
+                recording: 'កំពុងចាប់ផ្តើមថត...',
+                downloading: 'បានទាញយក MP3 ដោយជោគជ័យ។',
+                recordError: 'មានបញ្ហាក្នុងការថតសំឡេង៖ '
+            },
+            en: {
+                empty: 'Please enter text first.',
+                processing: 'Processing...',
+                reading: 'Reading text...',
+                done: 'Reading completed.',
+                error: 'Error reading text: ',
+                browser: 'Your browser does not support text to speech.',
+                recording: 'Starting recording...',
+                downloading: 'Successfully downloaded MP3.',
+                recordError: 'Error recording audio: '
+            }
+        };
+
         function showStatus(message, type) {
             statusDiv.textContent = message;
-            statusDiv.className = type;
+            statusDiv.className = `status show ${type}`;
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 3000);
         }
 
-        function getKhmerVoice() {
+        function setLanguage(lang) {
+            currentLang = lang;
+            textInput.placeholder = placeholders[lang];
+            langButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+        }
+
+        function getVoice(lang) {
             const voices = speechSynthesis.getVoices();
-            return voices.find(v => v.lang.includes('km')) || voices.find(v => v.lang.includes('th')) || voices[0];
+            const langCode = lang === 'km' ? 'km' : 'en';
+            return voices.find(v => v.lang.includes(langCode)) || voices.find(v => v.lang.includes(lang === 'km' ? 'th' : 'en')) || voices[0];
         }
 
-        async function loadVoices() {
+        function loadVoices() {
             return new Promise((resolve) => {
                 if (speechSynthesis.getVoices().length > 0) {
                     resolve();
@@ -142,51 +250,62 @@
             });
         }
 
-        speakBtn.addEventListener('click', async () => {
-            const text = textInput.value.trim();
-            if (!text) {
-                showStatus('សូមបញ្ចូលអត្ថបទជាមុនសិន។', 'error');
-                return;
-            }
-
-            showStatus('កំពុងដំណើរកការ...', 'info');
-            await loadVoices();
-
-            if ('speechSynthesis' in window) {
-                speechSynthesis.cancel();
+        function speakText(text) {
+            return new Promise((resolve, reject) => {
                 const utterance = new SpeechSynthesisUtterance(text);
-                const voice = getKhmerVoice();
+                const voice = getVoice(currentLang);
                 if (voice) utterance.voice = voice;
-                utterance.lang = 'km-KH';
-                utterance.rate = 0.8;
-                utterance.pitch = 1;
+                utterance.lang = currentLang === 'km' ? 'km-KH' : 'en-US';
+                utterance.rate = currentLang === 'km' ? 0.8 : 1.0;
 
                 utterance.onstart = () => {
-                    showStatus('កំពុងអានអត្ថបទ...', 'info');
+                    showStatus(messages[currentLang].reading, 'info');
                 };
 
                 utterance.onend = () => {
-                    showStatus('បានបញ្ចប់ការអាន។', 'success');
+                    showStatus(messages[currentLang].done, 'success');
+                    resolve();
                 };
 
                 utterance.onerror = (e) => {
-                    showStatus('មានបញ្ហាក្នុងការអាន៖ ' + e.error, 'error');
+                    showStatus(messages[currentLang].error + e.error, 'error');
+                    reject(e);
                 };
 
                 speechSynthesis.speak(utterance);
-            } else {
-                showStatus('Browser របស់អ្នកមិនគាំទ្រការបម្លើសទេ។', 'error');
+            });
+        }
+
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+        });
+
+        speakBtn.addEventListener('click', async () => {
+            const text = textInput.value.trim();
+            if (!text) {
+                showStatus(messages[currentLang].empty, 'error');
+                return;
+            }
+
+            showStatus(messages[currentLang].processing, 'info');
+            await loadVoices();
+
+            try {
+                speechSynthesis.cancel();
+                await speakText(text);
+            } catch (e) {
+                showStatus(messages[currentLang].browser, 'error');
             }
         });
 
         downloadBtn.addEventListener('click', async () => {
             const text = textInput.value.trim();
             if (!text) {
-                showStatus('សូមបញ្ចូលអត្ថបទជាមុនសិន។', 'error');
+                showStatus(messages[currentLang].empty, 'error');
                 return;
             }
 
-            showStatus('កំពុងចាប់ផ្តើមថត...', 'info');
+            showStatus(messages[currentLang].recording, 'info');
             await loadVoices();
 
             try {
@@ -203,34 +322,28 @@
                     const url = URL.createObjectURL(audioBlob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'khmer-speech.mp3';
+                    a.download = `speech-${currentLang}-${Date.now()}.mp3`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    showStatus('បានទាញយក MP3 ដោយជោគជ័យ។', 'success');
+                    showStatus(messages[currentLang].downloading, 'success');
                 };
 
                 mediaRecorder.start();
 
-                if ('speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    const voice = getKhmerVoice();
-                    if (voice) utterance.voice = voice;
-                    utterance.lang = 'km-KH';
-                    utterance.rate = 0.8;
+                await speakText(text);
 
-                    utterance.onend = () => {
-                        setTimeout(() => {
-                            mediaRecorder.stop();
-                            mediaStream.getTracks().forEach(track => track.stop());
-                        }, 500);
-                    };
-
-                    speechSynthesis.speak(utterance);
-                }
+                setTimeout(() => {
+                    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                        mediaRecorder.stop();
+                    }
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach(track => track.stop());
+                    }
+                }, 500);
             } catch (e) {
-                showStatus('មានបញ្ហាក្នុងការថតសំឡេង៖ ' + e.message, 'error');
+                showStatus(messages[currentLang].recordError + e.message, 'error');
             }
         });
     </script>
